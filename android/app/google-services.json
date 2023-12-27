@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "715839052304",
+    "project_id": "deepfake-8772a",
+    "storage_bucket": "deepfake-8772a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:715839052304:android:2be356f4cf62f3c65d8895",
+        "android_client_info": {
+          "package_name": "com.example.deepfake_prevention_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiM7E3Rh-zFBXHb8TITDhEbgAf4wqQRKQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>715839052304-bq2pii8j7p9oqvff38ltjftmo10rh01m.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.715839052304-bq2pii8j7p9oqvff38ltjftmo10rh01m</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>715839052304-m6o2415osj6of8rug39sdshuvqt3ldtf.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCl95N9sh6VbRTXHC_Mk6r_DGp6rFWc3SI</string>
+	<key>GCM_SENDER_ID</key>
+	<string>715839052304</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.deepfakePreventionApp</string>
+	<key>PROJECT_ID</key>
+	<string>deepfake-8772a</string>
+	<key>STORAGE_BUCKET</key>
+	<string>deepfake-8772a.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:715839052304:ios:94a45f53079f2f575d8895</string>
+</dict>
+</plist>

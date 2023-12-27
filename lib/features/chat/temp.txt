@@ -1,0 +1,218 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:deepfake_prevention_app/features/chat/controller/chat_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+import '../../../common/enums/message_enum.dart';
+
+final chatFieldModelProvider = ChangeNotifierProvider<ChatFieldModel>((ref) {
+  return ChatFieldModel();
+});
+
+class ChatFieldModel extends ChangeNotifier {
+  bool voiceButton = true;
+  bool isShowEmojiContainer = false;
+  FocusNode focusNode = FocusNode();
+  FlutterSoundRecorder? _soundRecorder;
+  bool isRecorderInit = false;
+  bool isRecording = false;
+  Timer? _timer;
+  Duration _recordingDuration = Duration.zero;
+  TextEditingController messageController = TextEditingController();
+
+  ChatFieldModel() {
+    _init();
+  }
+
+  Future<void> _init() async {
+    _soundRecorder = FlutterSoundRecorder();
+    await _openAudio();
+  }
+
+  Future<void> _openAudio() async {
+    final status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      throw RecordingPermissionException('Mic permission not allowed!');
+    }
+    await _soundRecorder!.openRecorder();
+    isRecorderInit = true;
+    notifyListeners();
+  }
+
+  void startRecording() async {
+    var tempDir = await getTemporaryDirectory();
+    var path = '${tempDir.path}/flutter_sound.aac';
+    if (!isRecorderInit) return;
+
+    await _soundRecorder!.startRecorder(toFile: path);
+    _startTimer();
+
+    isRecording = true;
+    notifyListeners();
+  }
+
+  void showEmojiContainer() {
+    isShowEmojiContainer = true;
+    focusNode.unfocus(); // Unfocus text field when showing emoji picker
+    notifyListeners();
+  }
+
+  void stopRecording(BuildContext context, ChatController chatController,
+      String receiverUserId) async {
+    if (!isRecorderInit) return;
+
+    await _soundRecorder!.stopRecorder();
+    _timer?.cancel();
+    _timer = null;
+
+    var tempDir = await getTemporaryDirectory();
+    var path = '${tempDir.path}/flutter_sound.aac';
+    if (!context.mounted) return;
+    chatController.sendFileMessage(
+      context,
+      File(path),
+      receiverUserId,
+      MessageEnum.audio,
+    );
+
+    isRecording = false;
+    _recordingDuration = Duration.zero;
+    notifyListeners();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _recordingDuration = Duration(seconds: timer.tick);
+      notifyListeners();
+    });
+  }
+
+  void sendTextMessage(BuildContext context, ChatController chatController,
+      String trimmedText, String receiverUserId) {
+    if (trimmedText.isNotEmpty) {
+      chatController.sendTextMessage(context, trimmedText, receiverUserId);
+      messageController.text = '';
+      voiceButton = true;
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    focusNode.dispose();
+    messageController.dispose();
+    _soundRecorder?.closeRecorder();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void hideEmojiContainer() {
+    isShowEmojiContainer = false;
+    notifyListeners();
+  }
+
+  void addEmojiToMessage(String emoji) {
+    messageController.text += emoji;
+    notifyListeners();
+  }
+
+  void toggleEmojiKeyboardContainer() {
+    if (isShowEmojiContainer) {
+      hideEmojiContainer();
+      focusNode.requestFocus(); // Refocus text field when hiding emoji picker
+    } else {
+      showEmojiContainer();
+    }
+  }
+}
+
+
+// import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// import '../controller/chat_controller.dart';
+// import '../controller/chat_filed_controller.dart';
+
+// class BottomChatField extends ConsumerWidget {
+//   final String receiverUserId;
+
+//   const BottomChatField({Key? key, required this.receiverUserId})
+//       : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final chatFieldModel = ref.watch(chatFieldModelProvider);
+//     final size = MediaQuery.of(context).size;
+//     final isLandscape =
+//         MediaQuery.of(context).orientation == Orientation.landscape;
+
+//     return Column(
+//       mainAxisAlignment: MainAxisAlignment.end,
+//       children: [
+//         Container(
+//           margin: EdgeInsets.only(
+//               bottom: isLandscape ? size.height * 0.005 : size.height * 0.01),
+//           decoration: const BoxDecoration(
+//             color: Colors.white,
+//           ),
+//           child: Row(
+//             children: [
+//               IconButton(
+//                 onPressed: () => chatFieldModel.toggleEmojiKeyboardContainer(),
+//                 icon: const Icon(Icons.emoji_emotions, color: Colors.grey),
+//               ),
+//               Expanded(
+//                 child: TextFormField(
+//                   focusNode: chatFieldModel.focusNode,
+//                   controller: chatFieldModel.messageController,
+//                   decoration: InputDecoration(
+//                     hintText: 'Type a message',
+//                     border: OutlineInputBorder(
+//                       borderRadius: BorderRadius.circular(20),
+//                       borderSide: BorderSide.none,
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//               IconButton(
+//                 onPressed: () => chatFieldModel.startRecording(),
+//                 icon: Icon(
+//                   chatFieldModel.isRecording ? Icons.stop : Icons.mic,
+//                   color: Colors.red,
+//                 ),
+//               ),
+//               IconButton(
+//                 onPressed: () => chatFieldModel.sendTextMessage(
+//                     context,
+//                     ref.read(chatControllerProvider),
+//                     chatFieldModel.messageController.text.trim(),
+//                     receiverUserId),
+//                 icon: Icon(Icons.send, color: Colors.blue),
+//               ),
+//             ],
+//           ),
+//         ),
+//         chatFieldModel.isShowEmojiContainer
+//             ? _buildEmojiPicker(chatFieldModel)
+//             : const SizedBox.shrink(),
+//       ],
+//     );
+//   }
+
+//   Widget _buildEmojiPicker(ChatFieldModel chatFieldModel) {
+//     return EmojiPicker(
+//       onEmojiSelected: (category, emoji) {
+//         chatFieldModel.addEmojiToMessage(emoji.emoji);
+//       },
+//     );
+//   }
+// }
+
+
+

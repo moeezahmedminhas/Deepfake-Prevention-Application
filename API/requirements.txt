@@ -1,0 +1,5 @@
+python-multipart
+uvicorn
+fastapi
+invisible-watermark
+cloudinary
